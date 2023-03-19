@@ -29,23 +29,20 @@ func NewApplication(prodCollection, userCollection *mongo.Collection) *Applicati
 
 func (app *Application) AddToCart() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		productQueryID := c.Query("Product_ID")
+		productQueryID := c.Query("id")
 		if productQueryID == "" {
 			log.Println("product id is empty")
 			_ = c.AbortWithError(http.StatusBadRequest, errors.New("product id is empty"))
-			return
 		}
-		userQueryID := c.Query("user_id")
+		userQueryID := c.Query("id")
 		if userQueryID == "" {
-			log.Println("user id is empty")
-			_ = c.AbortWithError(http.StatusBadRequest, errors.New("user id is empty"))
-			return
+			log.Panicln("user id is empty")
+			_ = c.AbortWithError(http.StatusBadRequest, errors.New("UserID is empty"))
 		}
 		productID, err := primitive.ObjectIDFromHex(productQueryID)
 		if err != nil {
 			log.Println(err)
 			c.AbortWithStatus(http.StatusInternalServerError)
-			return
 		}
 		var ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
@@ -98,7 +95,6 @@ func GetItemFromCart() gin.HandlerFunc {
 			c.Header("Content-Type", "application/json")
 			c.JSON(http.StatusNotFound, gin.H{"error": "invalid id"})
 			c.Abort()
-			return
 		}
 
 		usert_id, _ := primitive.ObjectIDFromHex(user_id)
@@ -111,7 +107,6 @@ func GetItemFromCart() gin.HandlerFunc {
 		if err != nil {
 			log.Println(err)
 			c.IndentedJSON(500, "not id found")
-			return
 		}
 
 		filter_match := bson.D{{Key: "$match", Value: bson.D{primitive.E{Key: "_id", Value: usert_id}}}}
