@@ -15,6 +15,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -83,7 +84,7 @@ func SignUp() gin.HandlerFunc {
 		user.Updated_At, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
 		user.ID = primitive.NewObjectID()
 		user.User_ID = user.ID.Hex()
-		token, refreshtoken, _ := generate.TokenGenerator(*user.Email, *user.First_Name, *user.Last_Name, user.User_ID)
+		token, refreshtoken, _ := generate.TokenGenerator(*user.Email, *user.FirstName, *user.LastName, user.User_ID)
 		user.Token = &token
 		user.Refresh_Token = &refreshtoken
 		_, inserterr := UserCollection.InsertOne(ctx, user)
@@ -119,7 +120,7 @@ func Login() gin.HandlerFunc {
 			fmt.Println(msg)
 			return
 		}
-		token, refreshToken, _ := generate.TokenGenerator(*founduser.Email, *founduser.First_Name, *founduser.Last_Name, founduser.User_ID)
+		token, refreshToken, _ := generate.TokenGenerator(*founduser.Email, *founduser.FirstName, *founduser.LastName, founduser.User_ID)
 		defer cancel()
 		generate.UpdateAllTokens(token, refreshToken, founduser.User_ID)
 		c.JSON(http.StatusFound, founduser)
@@ -165,8 +166,7 @@ func SearchProduct() gin.HandlerFunc {
 		}
 		defer cursor.Close(ctx)
 		if err := cursor.Err(); err != nil {
-			// Don't forget to log errors. I log them really simple here just
-			// to get the point across.
+
 			log.Println(err)
 			c.IndentedJSON(400, "invalid")
 			return
@@ -209,5 +209,42 @@ func SearchProductByQuery() gin.HandlerFunc {
 		}
 		defer cancel()
 		c.IndentedJSON(200, searchproducts)
+	}
+}
+
+func FilterPrice() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var productlist []models.Product
+		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+		defer cancel()
+		opts := options.Find().SetSort(bson.D{{"price", 1}})
+		cursor, err := ProductCollection.Find(ctx, bson.D{{}}, opts)
+		if err != nil {
+			c.IndentedJSON(http.StatusInternalServerError, "Someting Went Wrong Please Try After Some Time")
+			return
+		}
+		err = cursor.All(ctx, &productlist)
+		if err != nil {
+			log.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		defer cursor.Close(ctx)
+		if err := cursor.Err(); err != nil {
+
+			log.Println(err)
+			c.IndentedJSON(400, "invalid")
+			return
+		}
+
+		defer cancel()
+		c.IndentedJSON(200, productlist)
+
+	}
+}
+
+func FilterRating() gin.HandlerFunc {
+	return func(c *gin.Context) {
+
 	}
 }
