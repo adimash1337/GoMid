@@ -12,6 +12,7 @@ func UserRoutes(incomingRoutes *gin.Engine) {
 	incomingRoutes.POST("/admin/addproduct", controllers.ProductViewerAdmin()) //+
 	incomingRoutes.GET("/users/productview", controllers.SearchProduct())      //+
 	incomingRoutes.GET("/users/search", controllers.SearchProductByQuery())    //+
-	incomingRoutes.GET("/filter_price", controllers.FilterPrice())
+	incomingRoutes.GET("/filter_price_asced", controllers.FilterPriceAsced())
+	incomingRoutes.GET("/filter_price_desced", controllers.FilterPriceDesced())
 	incomingRoutes.GET("/filter_rating", controllers.FilterRating())
 }
