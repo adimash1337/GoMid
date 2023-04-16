@@ -272,8 +272,62 @@ func FilterPriceDesced() gin.HandlerFunc {
 	}
 }
 
-func FilterRating() gin.HandlerFunc {
+func FilterRatingDesced() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		var productlist []models.Product
+		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+		defer cancel()
+		opts := options.Find().SetSort(bson.D{{"rating", -1}})
+		cursor, err := ProductCollection.Find(ctx, bson.D{{}}, opts)
+		if err != nil {
+			c.IndentedJSON(http.StatusInternalServerError, "Someting Went Wrong Please Try After Some Time")
+			return
+		}
+		err = cursor.All(ctx, &productlist)
+		if err != nil {
+			log.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		defer cursor.Close(ctx)
+		if err := cursor.Err(); err != nil {
 
+			log.Println(err)
+			c.IndentedJSON(400, "invalid")
+			return
+		}
+
+		defer cancel()
+		c.IndentedJSON(200, productlist)
+	}
+}
+
+func FilterRatingAsced() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var productlist []models.Product
+		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+		defer cancel()
+		opts := options.Find().SetSort(bson.D{{"rating", 1}})
+		cursor, err := ProductCollection.Find(ctx, bson.D{{}}, opts)
+		if err != nil {
+			c.IndentedJSON(http.StatusInternalServerError, "Someting Went Wrong Please Try After Some Time")
+			return
+		}
+		err = cursor.All(ctx, &productlist)
+		if err != nil {
+			log.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		defer cursor.Close(ctx)
+		if err := cursor.Err(); err != nil {
+
+			log.Println(err)
+			c.IndentedJSON(400, "invalid")
+			return
+		}
+
+		defer cancel()
+		c.IndentedJSON(200, productlist)
 	}
 }

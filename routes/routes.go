@@ -14,5 +14,6 @@ func UserRoutes(incomingRoutes *gin.Engine) {
 	incomingRoutes.GET("/users/search", controllers.SearchProductByQuery())    //+
 	incomingRoutes.GET("/filter_price_asced", controllers.FilterPriceAsced())
 	incomingRoutes.GET("/filter_price_desced", controllers.FilterPriceDesced())
-	incomingRoutes.GET("/filter_rating", controllers.FilterRating())
+	incomingRoutes.GET("/filter_rating_asced", controllers.FilterRatingAsced())
+	incomingRoutes.GET("/filter_rating_desced", controllers.FilterRatingDesced())
 }
