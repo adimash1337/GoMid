@@ -14,7 +14,7 @@ type User struct {
 	Email         *string            `json:"email"      validate:"email,required"`
 	Phone         *string            `json:"phone"      validate:"required"`
 	Token         *string            `json:"token"`
-	Refresh_Token *string            `josn:"refresh_token"`
+	Refresh_Token *string            `json:"refresh_token"`
 	Created_At    time.Time          `json:"created_at"`
 	Updated_At    time.Time          `json:"updtaed_at"`
 	User_ID       string             `json:"user_id"`
@@ -26,5 +26,11 @@ type Product struct {
 	Price        uint64             `json:"price" bson:"price"`
 	Rating       *uint8             `json:"rating"`
 	Image        *string            `json:"image"`
-	Comment      string             `json:"comment"`
+}
+
+type Comment struct {
+	ID        primitive.ObjectID
+	UserID    primitive.ObjectID `bson:"_id"`
+	ProductID primitive.ObjectID `bson:"_id"`
+	Comment   string             `json:"comment"`
 }

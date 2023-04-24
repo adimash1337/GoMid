@@ -16,4 +16,5 @@ func UserRoutes(incomingRoutes *gin.Engine) {
 	incomingRoutes.GET("/filter_price_desced", controllers.FilterPriceDesced())
 	incomingRoutes.GET("/filter_rating_asced", controllers.FilterRatingAsced())
 	incomingRoutes.GET("/filter_rating_desced", controllers.FilterRatingDesced())
+	incomingRoutes.POST("/comment/:uid/:pid", controllers.SetComment())
 }

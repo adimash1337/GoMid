@@ -21,6 +21,7 @@ import (
 
 var UserCollection *mongo.Collection = database.UserData(database.Client, "Users")
 var ProductCollection *mongo.Collection = database.ProductData(database.Client, "Products")
+var comments *mongo.Collection = database.ProductData(database.Client, "Comments")
 var Validate = validator.New()
 
 func HashPassword(password string) string {
@@ -93,7 +94,7 @@ func SignUp() gin.HandlerFunc {
 			return
 		}
 		defer cancel()
-		c.JSON(http.StatusCreated, "Successfully Signed Up!!")
+		c.JSON(http.StatusCreated, fmt.Sprintf("Successfully Signed Up with %s id!!", user.User_ID))
 	}
 }
 
@@ -116,7 +117,7 @@ func Login() gin.HandlerFunc {
 		PasswordIsValid, msg := VerifyPassword(*user.Password, *founduser.Password)
 		defer cancel()
 		if !PasswordIsValid {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": msg})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "password is invalid"})
 			fmt.Println(msg)
 			return
 		}
@@ -329,5 +330,33 @@ func FilterRatingAsced() gin.HandlerFunc {
 
 		defer cancel()
 		c.IndentedJSON(200, productlist)
+	}
+}
+
+func SetComment() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+		var comment models.Comment
+		defer cancel()
+		if err := c.BindJSON(&comment); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		comment.ID = primitive.NewObjectID()
+
+		uid := c.Param("uid")
+		userId, _ := primitive.ObjectIDFromHex(uid)
+		comment.UserID = userId
+
+		pid := c.Param("pid")
+		productID, _ := primitive.ObjectIDFromHex(pid)
+		comment.ProductID = productID
+		_, anyerr := comments.InsertOne(ctx, comment)
+		if anyerr != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Not Created"})
+			return
+		}
+		defer cancel()
+		c.IndentedJSON(200, "Successfully commented!!")
 	}
 }
