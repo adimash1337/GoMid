@@ -45,8 +45,3 @@ func ProductData(client *mongo.Client, CollectionName string) *mongo.Collection 
 	var productcollection *mongo.Collection = client.Database("Ecommerce").Collection(CollectionName)
 	return productcollection
 }
-
-func Comments(client *mongo.Client, CollectionName string) *mongo.Collection {
-	var Comments *mongo.Collection = client.Database("Ecommerce").Collection(CollectionName)
-	return Comments
-}

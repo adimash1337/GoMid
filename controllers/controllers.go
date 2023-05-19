@@ -21,7 +21,6 @@ import (
 
 var UserCollection *mongo.Collection = database.UserData(database.Client, "Users")
 var ProductCollection *mongo.Collection = database.ProductData(database.Client, "Products")
-var comments *mongo.Collection = database.ProductData(database.Client, "Comments")
 var Validate = validator.New()
 
 func HashPassword(password string) string {
@@ -88,6 +87,7 @@ func SignUp() gin.HandlerFunc {
 		token, refreshtoken, _ := generate.TokenGenerator(*user.Email, *user.FirstName, *user.LastName, user.User_ID)
 		user.Token = &token
 		user.Refresh_Token = &refreshtoken
+		user.UserCart = make([]models.ProductUser, 0)
 		_, inserterr := UserCollection.InsertOne(ctx, user)
 		if inserterr != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "not created"})
@@ -139,6 +139,8 @@ func ProductViewerAdmin() gin.HandlerFunc {
 			return
 		}
 		products.Product_ID = primitive.NewObjectID()
+		products.Rating = nil
+
 		_, anyerr := ProductCollection.InsertOne(ctx, products)
 		if anyerr != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Not Created"})
@@ -337,6 +339,7 @@ func SetComment() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 		var comment models.Comment
+		// var product models.Product
 		defer cancel()
 		if err := c.BindJSON(&comment); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -350,13 +353,23 @@ func SetComment() gin.HandlerFunc {
 
 		pid := c.Param("pid")
 		productID, _ := primitive.ObjectIDFromHex(pid)
-		comment.ProductID = productID
-		_, anyerr := comments.InsertOne(ctx, comment)
-		if anyerr != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Not Created"})
-			return
-		}
-		defer cancel()
-		c.IndentedJSON(200, "Successfully commented!!")
+
+		filter := bson.D{primitive.E{Key: "_id", Value: productID}}
+		updatecomment := bson.D{{"$set", bson.D{{"comments", comment}}}}
+
+		updaterating := bson.D{{"set", bson.D{{"crating", comment.Rating}}}}
+		_, _ = ProductCollection.UpdateOne(ctx, filter, updatecomment)
+		_, _ = ProductCollection.UpdateOne(ctx, filter, updaterating)
+		// pipeline := []bson.M{
+		// 	{
+		// 		"$group": bson.M{
+		// 			"_id": "",
+		// 			"avg": bson.M{"$avg": "$rating"},
+		// 		},
+		// 	},
+		// }
+		// result, _ := ProductCollection.Aggregate(ctx, pipeline)
+		// _, _ = ProductCollection
+		c.IndentedJSON(200, "Successfully commented")
 	}
 }

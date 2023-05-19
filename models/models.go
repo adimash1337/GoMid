@@ -18,19 +18,29 @@ type User struct {
 	Created_At    time.Time          `json:"created_at"`
 	Updated_At    time.Time          `json:"updtaed_at"`
 	User_ID       string             `json:"user_id"`
+	UserCart      []ProductUser      `json:"usercart" bson:"usercart"`
 }
 
 type Product struct {
 	Product_ID   primitive.ObjectID `bson:"_id"`
 	Product_Name *string            `json:"product_name"`
 	Price        uint64             `json:"price" bson:"price"`
-	Rating       *uint8             `json:"rating"`
+	Rating       *uint8             `json:"crating"`
 	Image        *string            `json:"image"`
+	Comments     Comment            `json:"comments`
 }
 
 type Comment struct {
-	ID        primitive.ObjectID
-	UserID    primitive.ObjectID `bson:"_id"`
-	ProductID primitive.ObjectID `bson:"_id"`
-	Comment   string             `json:"comment"`
+	ID     primitive.ObjectID `bson:"_id"`
+	UserID primitive.ObjectID `bson:"user_id"`
+	Text   string             `json:"text"`
+	Rating uint8              `json:"rating"`
+}
+
+type ProductUser struct {
+	Product_ID   primitive.ObjectID `bson:"_id"`
+	Product_Name *string            `json:"product_name" bson:"product_name"`
+	Price        int                `json:"price"  bson:"price"`
+	Rating       *uint              `json:"rating" bson:"rating"`
+	Image        *string            `json:"image"  bson:"image"`
 }
